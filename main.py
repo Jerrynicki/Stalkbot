@@ -123,8 +123,7 @@ async def webcam(ctx):
         proc.wait(timeout=2)
         notification("Webcam", ctx)
 
-        cam = cv2.VideoCapture(0)
-        success, image = cam.read()
+        cam = cv2.VideoCapture(0) 
         await asyncio.sleep(int(config["webcamdelay"]))
         success, image = cam.read()
         cv2.imwrite("cache/image.png", image)
