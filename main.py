@@ -49,11 +49,11 @@ async def on_ready():
     print("Logged in as " + bot.user.name + "#" + bot.user.discriminator)
     await asyncio.sleep(5)
     while True:
-        await bot.change_presence(status=discord.Status.online, game=discord.Game(name=config["status"] + " | jer!help"))
+        await bot.change_presence(status=discord.Status.online, game=discord.Game(name=config["status"]))
         await asyncio.sleep(20)
 
 
-@bot.command(pass_context=True)
+@bot.command(pass_context=True, aliases=["tts"])
 async def say(ctx, *message):
     """Spielt eine Nachricht per TTS auf meinem PC ab."""
 
@@ -101,7 +101,7 @@ image_lock = False
 image_countdown = 0
 
 
-@bot.command(pass_context=True)
+@bot.command(pass_context=True, aliases=["cam", "wc"])
 async def webcam(ctx):
     global image_lock
     global image_countdown
@@ -146,7 +146,7 @@ screenshot_lock = False
 screenshot_countdown = 0
 
 
-@bot.command(pass_context=True)
+@bot.command(pass_context=True, aliases=["scr", "sc"])
 async def screenshot(ctx):
     global screenshot_lock
     global screenshot_countdown
