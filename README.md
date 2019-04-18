@@ -19,7 +19,7 @@ Cooler epischer Stalkbot mit dem deine Discord-Freunde dich stalken können.
 * keyboard
 * pillow
 * opencv-python
-* discord.py
+* discord.py (async branch)
 * numpy
 * pyaudio
 * gtts
