@@ -65,6 +65,8 @@ Eine beispielhafte Konfiguration des Benachrichtigungstexts wäre:
 * do_not_disturb_hotkey: Der Hotkey, mit welchem alle "Spionagefunktionen" des Bots deaktiviert werden, z.B.
 `"do_not_disturb_hotkey": "alt+end"` | Für zulässige Tastenkombinationen, siehe [hier](https://github.com/boppreh/keyboard#keyboard.all_modifiers)
 
+* folder: Der zu verwendende Ordner für den Command `folder`, leer lassen, um den Command zu deaktivieren. Z.B: `"folder": "/home/niklas/Bilder"`
+
 #### Starten des Bots
 
 * Nachdem alle Dependencies installiert sind und die config.json erstellt wurde, kann der Bot mit `sudo python3 main.py` gestartet werden.

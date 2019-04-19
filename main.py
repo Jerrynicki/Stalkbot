@@ -28,6 +28,7 @@ white_check_mark_emoji = "\U00002611"
 stop_sign_emoji = "\U0001F6D1"
 negative_squared_cross_mark_emoji = "\U0000274E"
 no_entry_emoji = "\U000026D4"
+outbox_tray_emoji = "\U0001F4E4"
 
 config = json.load(open("config.json", "r"))
 
@@ -298,6 +299,28 @@ async def play(ctx, *url):
     proc.terminate()
     sound_playing = False
     os.unlink("cache/tmp." + ctx.message.attachments[0]["url"].split(".")[-1])
+
+@bot.command(pass_context=True)
+async def folder(ctx):
+    try:
+        source = config["folder"]
+    except KeyError:
+        await bot.say("Es wurde kein Ordner in der Config angegeben.")
+    else:
+        valid_file = False
+        files = os.listdir(source)
+        while not valid_file:
+            raw_file = random.choice(files)
+            file = source + "/" + raw_file
+            if os.path.isfile(file) and os.path.getsize(file) < 8*1024**2:
+                valid_file = True
+            else:
+                valid_file = False
+
+        notification("Folder: " + raw_file, ctx)
+        await bot.add_reaction(ctx.message, outbox_tray_emoji)
+        await bot.send_file(ctx.message.channel, file)
+        await bot.remove_reaction(ctx.message, outbox_tray_emoji, ctx.message.server.me)
 
 
 @bot.command()
