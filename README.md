@@ -11,7 +11,7 @@ Cooler epischer Stalkbot mit dem deine Discord-Freunde dich stalken können.
 * python3-pip
 * scrot
 * ffmpeg
-* portaudio
+* portaudio (portaudio19-dev)
 * xdotool
 
 
