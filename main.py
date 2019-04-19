@@ -146,7 +146,7 @@ screenshot_lock = False
 screenshot_countdown = 0
 
 
-@bot.command(pass_context=True, aliases=["scr", "sc"])
+@bot.command(pass_context=True, aliases=["scr", "sc", "ss"])
 async def screenshot(ctx):
     global screenshot_lock
     global screenshot_countdown
