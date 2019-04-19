@@ -36,7 +36,8 @@ Cooler epischer Stalkbot mit dem deine Discord-Freunde dich stalken können.
 "notifications": {"text": "", "duration":""},
 "blacklist": [],
 "webcamdelay": "",
-"do_not_disturb_hotkey": ""}
+"do_not_disturb_hotkey": "",
+"folder": ""}
 ```
 
 Kopiere die leere config in eine neue Datei namens `config.json`, die einzelnen Optionen können wie folgt angepasst werden:
