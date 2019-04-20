@@ -9,6 +9,7 @@ Cooler epischer Stalkbot mit dem deine Discord-Freunde dich stalken können.
 Über Package-Manager:
 * python3
 * python3-pip
+* python3-tk
 * scrot
 * ffmpeg
 * portaudio (portaudio19-dev)

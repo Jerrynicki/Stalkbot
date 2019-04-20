@@ -17,6 +17,7 @@ import urllib.request
 import urllib.parse
 import json
 import random
+import tkinter as tk
 
 logging.basicConfig(level=logging.INFO)
 
@@ -29,11 +30,18 @@ stop_sign_emoji = "\U0001F6D1"
 negative_squared_cross_mark_emoji = "\U0000274E"
 no_entry_emoji = "\U000026D4"
 outbox_tray_emoji = "\U0001F4E4"
+no_bell_emoji = "\U0001F515"
 
 config = json.load(open("config.json", "r"))
 
 blacklist = config["blacklist"]
 TOKEN = config["token"]
+
+try:
+    ueberwachung = json.load(open("ueberwachung_retain.json", "r"))
+except:
+    ueberwachung = {"global": True, "tts": True, "screenshot": True, "proc": True, "play": True}
+
 
 bot = commands.Bot(command_prefix=config["prefix"], description="jejei")
 
@@ -60,6 +68,10 @@ async def say(ctx, *message):
 
     global sound_playing
     message = " ".join(message)
+
+    if not ueberwachung["tts"]:
+        await bot.add_reaction(ctx.message, no_bell_emoji)
+        return
 
     if sound_playing:
         await bot.add_reaction(ctx.message, no_entry_emoji)
@@ -96,7 +108,6 @@ async def say(ctx, *message):
     proc.terminate()
     sound_playing = False
 
-ueberwachung = True
 
 image_lock = False
 image_countdown = 0
@@ -106,6 +117,10 @@ image_countdown = 0
 async def webcam(ctx):
     global image_lock
     global image_countdown
+
+    if not ueberwachung["webcam"]:
+        await bot.add_reaction(ctx.message, no_bell_emoji)
+        return
 
     if image_lock or image_countdown > time.time() or not ueberwachung:
         await bot.add_reaction(ctx.message, negative_squared_cross_mark_emoji)
@@ -151,7 +166,12 @@ screenshot_countdown = 0
 async def screenshot(ctx):
     global screenshot_lock
     global screenshot_countdown
-    if screenshot_lock or screenshot_countdown > time.time() or not ueberwachung:
+
+    if not ueberwachung["screenshot"]:
+        await bot.add_reaction(ctx.message, no_bell_emoji)
+        return
+    
+    if screenshot_lock or screenshot_countdown > time.time():
         await bot.add_reaction(ctx.message, negative_squared_cross_mark_emoji)
         return
 
@@ -188,16 +208,16 @@ async def screenshot(ctx):
 async def proc(ctx, *arg):
     arg = " ".join(arg)
 
+    if not ueberwachung["proc"]:
+        await bot.add_reaction(ctx.message, no_bell_emoji)
+        return
+
     if ctx.message.author.id in blacklist:
         await bot.say(ctx.message.author.mention + " hurensohn bist geblacklistet weil du hurensohn bist\nfick dich")
         return
 
     if not arg or arg not in ("cpu", "ram", "focused"):
         await bot.say("Bitte gebe als Argument entweder `cpu`, `ram` oder `focused` an.")
-        return
-
-    if not ueberwachung:
-        await bot.add_reaction(ctx.message, negative_squared_cross_mark_emoji)
         return
 
     proc = subprocess.Popen(["python3", "warning_sound.py"])
@@ -233,6 +253,10 @@ async def play(ctx, *url):
     """Spielt eine beliebige (mit FFmpeg kompatible) Audiodatei ab"""
 
     global sound_playing
+
+    if not ueberwachung["play"]:
+        await bot.add_reaction(ctx.message, no_bell_emoji)
+        return
 
     if ctx.message.author.id in blacklist:
         await bot.say(ctx.message.author.mention + " hurensohn bist geblacklistet weil du hurensohn bist\nfick dich")
@@ -331,16 +355,61 @@ async def on_message(message):
 
 def toggle_überwachung():
     global ueberwachung
+    root = tk.Tk()
+    root.title("Stalkbot Überwachung Control-Panel")
 
-    if ueberwachung:
-        ueberwachung = False
-        subprocess.call(["notify-send", "TTS-Bot: Überwachungsmodule deaktiviert", "-t", "3000"])
+    def toggle_tts():
+        if ueberwachung["tts"]:
+            ueberwachung["tts"] = False
+        else:
+            ueberwachung["tts"] = True
 
-    else:
-        ueberwachung = True
-        subprocess.call(["notify-send", "TTS-Bot: Überwachungsmodule aktiviert", "-t", "3000"])
+    def toggle_screenshot():
+        if ueberwachung["screenshot"]:
+            ueberwachung["screenshot"] = False
+        else:
+            ueberwachung["screenshot"] = True
 
+    def toggle_proc():
+        if ueberwachung["proc"]:
+            ueberwachung["proc"] = False
+        else:
+            ueberwachung["proc"] = True
 
-keyboard.add_hotkey(config["do_not_disturb_hotkey"], toggle_überwachung)
+    def toggle_play():
+        if ueberwachung["play"]:
+            ueberwachung["play"] = False
+        else:
+            ueberwachung["play"] = True
+
+    tts_bt = tk.Button(root, text="TTS: " + str(ueberwachung["tts"]), command=toggle_tts, font=("Helvetica", 16))
+    scr_bt = tk.Button(root, text="Screenshot: " + str(ueberwachung["screenshot"]), command=toggle_screenshot, font=("Helvetica", 16))
+    proc_bt = tk.Button(root, text="Prozessliste: " + str(ueberwachung["proc"]), command=toggle_proc, font=("Helvetica", 16))
+    play_bt = tk.Button(root, text="Play: " + str(ueberwachung["play"]), command=toggle_play, font=("Helvetica", 16))
+
+    done_bt = tk.Button(root, text="Fertig", command=root.destroy, font=("Helvetica", 14))
+
+    tts_bt.pack()
+    scr_bt.pack()
+    proc_bt.pack()
+    play_bt.pack()
+    done_bt.pack()
+    while True:
+        try:
+            tts_bt.config(text="TTS: " + str(ueberwachung["tts"]))
+            scr_bt.config(text="Screenshot: " + str(ueberwachung["screenshot"]))
+            proc_bt.config(text="Prozessliste: " + str(ueberwachung["proc"]))
+            play_bt.config(text="Play: " + str(ueberwachung["play"]))
+            root.update()
+            time.sleep(1/30)
+        except:
+            break
+    json.dump(ueberwachung, open("ueberwachung_retain.json", "w"))
+
+if not "control_panel_hotkey" in config and "do_not_disturb_hotkey" in config:
+    config["control_panel_hotkey"] = config["do_not_disturb_hotkey"]
+    print("Achtung! In deiner Config ist der Control Panel Hotkey noch unter 'do_not_disturb_hotkey' definiert! Für Kompatiblität zwischen alten Configs wird das automatisch korrigiert, aber bitte ändere den Namen des Schlüssels trotzdem.")
+
+keyboard.add_hotkey(config["control_panel_hotkey"], toggle_überwachung)
 
 bot.run(TOKEN)
