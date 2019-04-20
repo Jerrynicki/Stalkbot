@@ -24,6 +24,7 @@ Cooler epischer Stalkbot mit dem deine Discord-Freunde dich stalken können.
 * pyaudio
 * gtts
 * gtts-token
+* psutil
 
 ### Aufsetzen des Bots
 * Git Repository klonen -> `git clone https://github.com/Jerrynicki/Stalkbot`

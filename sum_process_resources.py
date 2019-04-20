@@ -1,6 +1,7 @@
 # sum_process_resources.py
 from collections import OrderedDict
 import subprocess
+import psutil
 
 def run_cmd(cmd_string):
     """Runs commands and saves output to variable"""
@@ -38,7 +39,7 @@ def sum_process_resources(cpu_ram):
     else:
         for i, k in enumerate(sorted_cpu.items()):
             if i < top:
-                print("{}. {} | {}".format(i+1, k[0].split("/")[-1], str(round(float(k[1]) / 3, 1)) + "%"), file=printfile)
+                print("{}. {} | {}".format(i+1, k[0].split("/")[-1], str(round(float(k[1]) / psutil.cpu_count(), 1)) + "%"), file=printfile)
 
     printfile.close()
 

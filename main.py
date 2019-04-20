@@ -217,23 +217,7 @@ async def proc(ctx, *arg):
         os.system("xdotool getwindowfocus getwindowname > cache/xdotool.txt")
         os.system("xdotool getwindowfocus getwindowgeometry >> cache/xdotool.txt")
         with open("cache/xdotool.txt", "r") as file:
-            info = file.read()
-            info = info.split("\n")
-            del info[1]
-            info.insert(0, "Aktives Fenster: ")
-            
-            info[2] = info[2].split(" ")
-            print(info[2])
-            tup = info[2][3].split(",")
-            tup = (int(tup[0]), int(tup[1]))
-            if tup[0] > 1920:
-                info[2][-1] = "1)"
-            else:
-                info[2][-1] = "0)"
-
-            info[2] = " ".join(info[2])
-            
-            info = "\n".join(info)
+            info = file.read() 
 
         await bot.say(info)
 
