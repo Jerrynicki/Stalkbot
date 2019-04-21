@@ -18,6 +18,9 @@ import urllib.parse
 import json
 import random
 import tkinter as tk
+import pyaudio
+import wave
+import audioop
 
 logging.basicConfig(level=logging.INFO)
 
@@ -40,7 +43,7 @@ TOKEN = config["token"]
 try:
     ueberwachung = json.load(open("ueberwachung_retain.json", "r"))
 except:
-    ueberwachung = {"global": True, "tts": True, "screenshot": True, "proc": True, "play": True}
+    ueberwachung = {"global": True, "tts": True, "screenshot": True, "webcam": True, "proc": True, "play": True}
 
 
 bot = commands.Bot(command_prefix=config["prefix"], description="jejei")
@@ -52,6 +55,37 @@ def notification(action, ctx):
     notify_config = config["notifications"]["text"]
     subprocess.call(["notify-send", "-t", config["notifications"]["duration"], notify_config.replace("$AUTHOR", ctx.message.author.name).replace("$SERVER", ctx.message.server.name).replace("$CHANNEL", "#" + ctx.message.channel.name).replace("$ACTION", action)])
 
+def play_file(file, earrape_protection=False, timeout=False):
+    chunk = 128
+    f = wave.open(file, "rb")
+
+    if timeout == "auto":
+        frames = f.getnframes()
+        rate = f.getframerate()
+        duration = frames / float(rate)
+        timeout = duration + 1
+        start_time = time.time()
+    
+    elif timeout != False:
+        start_time = time.time()
+
+    p = pyaudio.PyAudio()  
+    stream = p.open(format = p.get_format_from_width(f.getsampwidth()), channels = f.getnchannels(), rate = f.getframerate(), output = True)
+    data = f.readframes(chunk)  
+
+    while data:  
+        data = f.readframes(chunk)  
+        rms = audioop.rms(data, 2)
+        if earrape_protection and rms > 3300:
+            continue
+        stream.write(data)  
+        if time.time() > start_time + timeout:
+            break
+
+    stream.stop_stream()  
+    stream.close()  
+
+    p.terminate()
 
 @bot.event
 async def on_ready():
@@ -92,10 +126,9 @@ async def say(ctx, *message):
 
         notification("TTS", ctx)
 
-        proc = subprocess.Popen(["python3", "tts_play.py"])
         try:
             sound_playing = True
-            proc.wait(timeout=20)
+            play_file("cache/tmp.wav", timeout=20)
             await bot.remove_reaction(ctx.message, play_emoji, ctx.message.server.me)
             await bot.add_reaction(ctx.message, white_check_mark_emoji)
         except:
@@ -135,12 +168,23 @@ async def webcam(ctx):
     image_lock = True
 
     try:
-        proc = subprocess.Popen(["python3", "warning_sound.py"])
-        proc.wait(timeout=2)
+        play_file("warning_sound.wav", timeout="auto")
         notification("Webcam", ctx)
 
         cam = cv2.VideoCapture(0) 
-        await asyncio.sleep(int(config["webcamdelay"]))
+        test_success, test_image = cam.read()
+        start_wait = time.time()
+        failed_reads = 0
+        while time.time() < start_wait + int(config["webcamdelay"]) or test_success is False: 
+            test_success, test_image = cam.read() 
+            if test_success is False:
+                failed_reads += 1
+            if failed_reads >= 3:
+                raise Exception("Zu viele Frames nicht gelesen. Bitte versuche es noch einmal.")
+
+            time.sleep(1/5)
+
+        print(cam.isOpened())
         success, image = cam.read()
         cv2.imwrite("cache/image.png", image)
         cam.release()
@@ -182,8 +226,7 @@ async def screenshot(ctx):
     try:
         screenshot_lock = True
 
-        proc = subprocess.Popen(["python3", "warning_sound.py"])
-        proc.wait(timeout=2)
+        play_file("warning_sound.wav", timeout="auto")
         notification("Screenshot", ctx)
 
         await bot.add_reaction(ctx.message, repeat_emoji)
@@ -219,10 +262,9 @@ async def proc(ctx, *arg):
     if not arg or arg not in ("cpu", "ram", "focused"):
         await bot.say("Bitte gebe als Argument entweder `cpu`, `ram` oder `focused` an.")
         return
-
-    proc = subprocess.Popen(["python3", "warning_sound.py"])
-    proc.wait(timeout=2)
-    
+  
+    play_file("warning_sound.wav", timeout="auto")
+       
     notification("Proc" + arg.upper(), ctx)
 
     if arg == "cpu":
@@ -274,8 +316,8 @@ async def play(ctx, *url):
     try:
         print(ctx.message.attachments)
 
-        proc = subprocess.Popen(["python3", "warning_sound.py"])
-        proc.wait(timeout=2)
+
+        play_file("warning_sound.wav", timeout="auto")
         notification("Play " + ctx.message.attachments[0]["url"].split("/")[-1], ctx)
 
         await bot.add_reaction(ctx.message, repeat_emoji)
@@ -290,10 +332,9 @@ async def play(ctx, *url):
 
         await bot.remove_reaction(ctx.message, repeat_emoji, ctx.message.server.me)
         await bot.add_reaction(ctx.message, play_emoji)
-        proc = subprocess.Popen(["python3", "file_play.py"])
         try:
-            sound_playing = True
-            proc.wait(timeout=20)
+            sound_playing = True 
+            file_play("cache/tmp.wav", timeout=20, earrape_protection=True) 
             await bot.remove_reaction(ctx.message, play_emoji, ctx.message.server.me)
             await bot.add_reaction(ctx.message, white_check_mark_emoji)
         except:
@@ -304,7 +345,6 @@ async def play(ctx, *url):
         await bot.add_reaction(ctx.message, negative_squared_cross_mark_emoji)
         print(exc)
 
-    proc.terminate()
     sound_playing = False
     os.unlink("cache/tmp." + ctx.message.attachments[0]["url"].split(".")[-1])
 
@@ -370,6 +410,12 @@ def toggle_überwachung():
         else:
             ueberwachung["screenshot"] = True
 
+    def toggle_webcam():
+        if ueberwachung["webcam"]:
+            ueberwachung["webcam"] = False
+        else:
+            ueberwachung["webcam"] = True
+
     def toggle_proc():
         if ueberwachung["proc"]:
             ueberwachung["proc"] = False
@@ -384,6 +430,7 @@ def toggle_überwachung():
 
     tts_bt = tk.Button(root, text="TTS: " + str(ueberwachung["tts"]), command=toggle_tts, font=("Helvetica", 16))
     scr_bt = tk.Button(root, text="Screenshot: " + str(ueberwachung["screenshot"]), command=toggle_screenshot, font=("Helvetica", 16))
+    webcam_bt = tk.Button(root, text="Webcam: " + str(ueberwachung["webcam"]), command=toggle_webcam, font=("Helvetica", 16))
     proc_bt = tk.Button(root, text="Prozessliste: " + str(ueberwachung["proc"]), command=toggle_proc, font=("Helvetica", 16))
     play_bt = tk.Button(root, text="Play: " + str(ueberwachung["play"]), command=toggle_play, font=("Helvetica", 16))
 
@@ -391,6 +438,7 @@ def toggle_überwachung():
 
     tts_bt.pack()
     scr_bt.pack()
+    webcam_bt.pack()
     proc_bt.pack()
     play_bt.pack()
     done_bt.pack()
@@ -398,6 +446,7 @@ def toggle_überwachung():
         try:
             tts_bt.config(text="TTS: " + str(ueberwachung["tts"]))
             scr_bt.config(text="Screenshot: " + str(ueberwachung["screenshot"]))
+            webcam_bt.config(text="Webcam: " + str(ueberwachung["webcam"]))
             proc_bt.config(text="Prozessliste: " + str(ueberwachung["proc"]))
             play_bt.config(text="Play: " + str(ueberwachung["play"]))
             root.update()
