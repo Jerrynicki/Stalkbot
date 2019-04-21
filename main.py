@@ -389,9 +389,10 @@ async def keyboard(ctx, *text):
         await bot.add_reaction(ctx.message, no_bell_emoji)
         return
 
-    if len(text) > 30:
+    if len(text) > 50:
         await bot.add_reaction(ctx.message, negative_squared_cross_mark_emoji)
-        await bot.say("Der Text ist zu lang! (max. 30 Zeichen)")
+        await bot.say("Der Text ist zu lang! (max. 50 Zeichen)")
+        return
 
     play_file("warning_sound.wav", timeout="auto")
     notification("Keyboard: " + text, ctx)
