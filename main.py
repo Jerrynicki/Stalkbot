@@ -334,10 +334,11 @@ async def play(ctx, *url):
         await bot.add_reaction(ctx.message, play_emoji)
         try:
             sound_playing = True 
-            file_play("cache/tmp.wav", timeout=20, earrape_protection=True) 
+            play_file("cache/tmp.wav", timeout=20, earrape_protection=True) 
             await bot.remove_reaction(ctx.message, play_emoji, ctx.message.server.me)
             await bot.add_reaction(ctx.message, white_check_mark_emoji)
-        except:
+        except Exception as exc:
+            await bot.say(str(exc))
             await bot.remove_reaction(ctx.message, play_emoji, ctx.message.server.me)
             await bot.add_reaction(ctx.message, stop_sign_emoji)
     except Exception as exc:
