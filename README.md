@@ -18,6 +18,8 @@ Cooler epischer Stalkbot mit dem deine Discord-Freunde dich stalken können.
 
 Über Pip (pip3 install PACKAGE):
 * keyboard
+* mouse
+* pyautogui
 * pillow
 * opencv-python
 * discord.py (async branch)

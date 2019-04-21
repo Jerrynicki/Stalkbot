@@ -11,7 +11,8 @@ import time
 import cv2
 import numpy
 from PIL import Image, ImageFilter
-import keyboard
+import keyboard as keyboard_module
+import mouse
 import sum_process_resources
 import urllib.request
 import urllib.parse
@@ -21,6 +22,7 @@ import tkinter as tk
 import pyaudio
 import wave
 import audioop
+import pyautogui
 
 logging.basicConfig(level=logging.INFO)
 
@@ -40,11 +42,15 @@ config = json.load(open("config.json", "r"))
 blacklist = config["blacklist"]
 TOKEN = config["token"]
 
+ueberwachung_standard = {"global": True, "tts": True, "screenshot": True, "webcam": True, "proc": True, "play": True, "cursor": True, "keyboard": True}
 try:
-    ueberwachung = json.load(open("ueberwachung_retain.json", "r"))
+    if ueberwachung_from_file.keys() == ueberwachung_standard.keys():
+        ueberwachung = ueberwachung_from_file
+    else:
+        print("Deine Einstellungen zu den Features des Bots sind von einer veralteten Version! Sie wurden auf die Standardeinstellungen zurückgesetzt.")
+        ueberwachung = ueberwachung_standard
 except:
-    ueberwachung = {"global": True, "tts": True, "screenshot": True, "webcam": True, "proc": True, "play": True}
-
+    ueberwachung = ueberwachung_standard
 
 bot = commands.Bot(command_prefix=config["prefix"], description="jejei")
 
@@ -350,6 +356,50 @@ async def play(ctx, *url):
     os.unlink("cache/tmp." + ctx.message.attachments[0]["url"].split(".")[-1])
 
 @bot.command(pass_context=True)
+async def cursor(ctx, *coordinates):
+    if ctx.message.author.id in blacklist:
+        await bot.say(ctx.message.author.mention + " hurensohn bist geblacklistet weil du hurensohn bist\nfick dich")
+        return
+ 
+    if not ueberwachung["cursor"]:
+        await bot.add_reaction(ctx.message, no_bell_emoji)
+        return
+
+    if len(coordinates) >= 2:
+        x, y = coordinates[0], coordinates[1]
+    else:
+        screen = pyautogui.size()
+        x, y = random.randint(0, screen[0]), random.randint(0, screen[1])
+
+    play_file("warning_sound.wav", timeout="auto")
+    notification("Cursor: " + str(x) + "x" + str(y), ctx)
+
+    mouse.move(x, y, duration=0.5)
+    await bot.add_reaction(ctx.message, white_check_mark_emoji)
+
+@bot.command(pass_context=True)
+async def keyboard(ctx, *text):
+    text = " ".join(text)
+
+    if ctx.message.author.id in blacklist:
+        await bot.say(ctx.message.author.mention + " hurensohn bist geblacklistet weil du hurensohn bist\nfick dich")
+        return
+    
+    if not ueberwachung["keyboard"]:
+        await bot.add_reaction(ctx.message, no_bell_emoji)
+        return
+
+    if len(text) > 30:
+        await bot.add_reaction(ctx.message, negative_squared_cross_mark_emoji)
+        await bot.say("Der Text ist zu lang! (max. 30 Zeichen)")
+
+    play_file("warning_sound.wav", timeout="auto")
+    notification("Keyboard: " + text, ctx)
+
+    keyboard_module.write(text, delay=0.05, exact=True)
+    await bot.add_reaction(ctx.message, white_check_mark_emoji)
+
+@bot.command(pass_context=True)
 async def folder(ctx):
     try:
         source = config["folder"]
@@ -398,6 +448,7 @@ def toggle_überwachung():
     global ueberwachung
     root = tk.Tk()
     root.title("Stalkbot Überwachung Control-Panel")
+    # TODO: diesen code schöner machen
 
     def toggle_tts():
         if ueberwachung["tts"]:
@@ -428,12 +479,26 @@ def toggle_überwachung():
             ueberwachung["play"] = False
         else:
             ueberwachung["play"] = True
+    
+    def toggle_cursor():
+        if ueberwachung["cursor"]:
+            ueberwachung["cursor"] = False
+        else:
+            ueberwachung["cursor"] = True
+    
+    def toggle_keyboard():
+        if ueberwachung["keyboard"]:
+            ueberwachung["keyboard"] = False
+        else:
+            ueberwachung["keyboard"] = True
 
     tts_bt = tk.Button(root, text="TTS: " + str(ueberwachung["tts"]), command=toggle_tts, font=("Helvetica", 16))
     scr_bt = tk.Button(root, text="Screenshot: " + str(ueberwachung["screenshot"]), command=toggle_screenshot, font=("Helvetica", 16))
     webcam_bt = tk.Button(root, text="Webcam: " + str(ueberwachung["webcam"]), command=toggle_webcam, font=("Helvetica", 16))
     proc_bt = tk.Button(root, text="Prozessliste: " + str(ueberwachung["proc"]), command=toggle_proc, font=("Helvetica", 16))
     play_bt = tk.Button(root, text="Play: " + str(ueberwachung["play"]), command=toggle_play, font=("Helvetica", 16))
+    cursor_bt = tk.Button(root, text="Cursor: " + str(ueberwachung["cursor"]), command=toggle_cursor, font=("Helvetica", 16))
+    keyboard_bt = tk.Button(root, text="Tastatur: " + str(ueberwachung["keyboard"]), command=toggle_keyboard, font=("Helvetica", 16))
 
     done_bt = tk.Button(root, text="Fertig", command=root.destroy, font=("Helvetica", 14))
 
@@ -442,6 +507,8 @@ def toggle_überwachung():
     webcam_bt.pack()
     proc_bt.pack()
     play_bt.pack()
+    cursor_bt.pack()
+    keyboard_bt.pack()
     done_bt.pack()
     while True:
         try:
@@ -450,6 +517,8 @@ def toggle_überwachung():
             webcam_bt.config(text="Webcam: " + str(ueberwachung["webcam"]))
             proc_bt.config(text="Prozessliste: " + str(ueberwachung["proc"]))
             play_bt.config(text="Play: " + str(ueberwachung["play"]))
+            cursor_bt.config(text="Cursor: " + str(ueberwachung["cursor"]))
+            keyboard_bt.config(text="Tastatur: " + str(ueberwachung["keyboard"]))
             root.update()
             time.sleep(1/30)
         except:
@@ -460,6 +529,6 @@ if not "control_panel_hotkey" in config and "do_not_disturb_hotkey" in config:
     config["control_panel_hotkey"] = config["do_not_disturb_hotkey"]
     print("Achtung! In deiner Config ist der Control Panel Hotkey noch unter 'do_not_disturb_hotkey' definiert! Für Kompatiblität zwischen alten Configs wird das automatisch korrigiert, aber bitte ändere den Namen des Schlüssels trotzdem.")
 
-keyboard.add_hotkey(config["control_panel_hotkey"], toggle_überwachung)
+keyboard_module.add_hotkey(config["control_panel_hotkey"], toggle_überwachung)
 
 bot.run(TOKEN)
