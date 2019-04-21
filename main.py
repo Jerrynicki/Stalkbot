@@ -78,21 +78,26 @@ def play_file(file, earrape_protection=False, timeout=False):
 
     p = pyaudio.PyAudio()  
     stream = p.open(format = p.get_format_from_width(f.getsampwidth()), channels = f.getnchannels(), rate = f.getframerate(), output = True)
-    data = f.readframes(chunk)  
+    data = f.readframes(chunk)
 
-    while data:  
-        data = f.readframes(chunk)  
+    timed_out = False
+    while data:
+        data = f.readframes(chunk)
         rms = audioop.rms(data, 2)
         if earrape_protection and rms > 3300:
             continue
-        stream.write(data)  
+        stream.write(data)
         if time.time() > start_time + timeout:
+            timed_out = True
             break
 
     stream.stop_stream()  
     stream.close()  
 
     p.terminate()
+
+    if timed_out:
+        raise TimeoutError
 
 @bot.event
 async def on_ready():
@@ -345,7 +350,6 @@ async def play(ctx, *url):
             await bot.remove_reaction(ctx.message, play_emoji, ctx.message.server.me)
             await bot.add_reaction(ctx.message, white_check_mark_emoji)
         except Exception as exc:
-            await bot.say(str(exc))
             await bot.remove_reaction(ctx.message, play_emoji, ctx.message.server.me)
             await bot.add_reaction(ctx.message, stop_sign_emoji)
     except Exception as exc:
