@@ -44,6 +44,7 @@ TOKEN = config["token"]
 
 ueberwachung_standard = {"global": True, "tts": True, "screenshot": True, "webcam": True, "proc": True, "play": True, "cursor": True, "keyboard": True}
 try:
+    ueberwachung_from_file = json.load(open("ueberwachung_retain.json"))
     if ueberwachung_from_file.keys() == ueberwachung_standard.keys():
         ueberwachung = ueberwachung_from_file
     else:
