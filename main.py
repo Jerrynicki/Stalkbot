@@ -36,11 +36,13 @@ negative_squared_cross_mark_emoji = "\U0000274E"
 no_entry_emoji = "\U000026D4"
 outbox_tray_emoji = "\U0001F4E4"
 no_bell_emoji = "\U0001F515"
+hourglass_emoji = "\U000023F3"
 
 config = json.load(open("config.json", "r"))
 
 blacklist = config["blacklist"]
 TOKEN = config["token"]
+config["cooldown"] = int(config["cooldown"])
 
 ueberwachung_standard = {"global": True, "tts": True, "screenshot": True, "webcam": True, "proc": True, "play": True, "cursor": True, "keyboard": True}
 try:
@@ -167,8 +169,12 @@ async def webcam(ctx):
         await bot.add_reaction(ctx.message, no_bell_emoji)
         return
 
-    if image_lock or image_countdown > time.time() or not ueberwachung:
+    if image_lock or not ueberwachung:
         await bot.add_reaction(ctx.message, negative_squared_cross_mark_emoji)
+        return
+
+    if time.time() < image_countdown:
+        await bot.add_reaction(ctx.message, hourglass_emoji)
         return
 
     if ctx.message.author.id in blacklist:
@@ -211,7 +217,7 @@ async def webcam(ctx):
 
     finally:
         image_lock = False
-        image_countdown = time.time() + 15
+        image_countdown = time.time() + config["cooldown"]
 
 
 screenshot_lock = False
@@ -227,8 +233,12 @@ async def screenshot(ctx):
         await bot.add_reaction(ctx.message, no_bell_emoji)
         return
     
-    if screenshot_lock or screenshot_countdown > time.time():
+    if screenshot_lock:
         await bot.add_reaction(ctx.message, negative_squared_cross_mark_emoji)
+        return
+
+    if time.time() < screenshot_countdown:
+        await bot.add_reaction(ctx.message, hourglass_emoji)
         return
 
     if ctx.message.author.id in blacklist:
@@ -256,7 +266,7 @@ async def screenshot(ctx):
 
     finally:
         screenshot_lock = False
-        screenshot_countdown = time.time() + 15
+        screenshot_countdown = time.time() + config["cooldown"]
 
 
 @bot.command(pass_context=True)

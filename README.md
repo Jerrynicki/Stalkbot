@@ -41,7 +41,8 @@ Cooler epischer Stalkbot mit dem deine Discord-Freunde dich stalken können.
 "blacklist": [],
 "webcamdelay": "",
 "do_not_disturb_hotkey": "",
-"folder": ""}
+"folder": "",
+"cooldown": ""}
 ```
 
 Kopiere die leere config in eine neue Datei namens `config.json`, die einzelnen Optionen können wie folgt angepasst werden:
@@ -67,10 +68,12 @@ Eine beispielhafte Konfiguration des Benachrichtigungstexts wäre:
 
 * webcamdelay: Wie lange gewartet wird, bis ein Foto mit der Webcam gemacht wird (in Sekunden)
 
-* do_not_disturb_hotkey: Der Hotkey, mit welchem alle "Spionagefunktionen" des Bots deaktiviert werden, z.B.
-`"do_not_disturb_hotkey": "alt+end"` | Für zulässige Tastenkombinationen, siehe [hier](https://github.com/boppreh/keyboard#keyboard.all_modifiers)
+* control\_panel\_hotkey (ehem. do\_not\_disturb\_hotkey): Der Hotkey zum Aufrufen des Control-Panels
+`"control\_panel\_hotkey": "alt+end"` | Für zulässige Tastenkombinationen, siehe [hier](https://github.com/boppreh/keyboard#keyboard.all_modifiers)
 
 * folder: Der zu verwendende Ordner für den Command `folder`, leer lassen, um den Command zu deaktivieren. Z.B: `"folder": "/home/niklas/Bilder"`
+
+* cooldown: Wie lange die Ausführung vom Screenshot- und Webcam-Command verweigert wird nachdem er einmal ausgeführt wurde (in s)
 
 #### Starten des Bots
 
