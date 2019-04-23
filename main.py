@@ -460,6 +460,62 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
+def edit_config():
+    global config
+    root = tk.Tk()
+    root.title("Stalkbot Config Editor")
+
+    def done():
+        global config
+        reconstructed_config = {}
+        for key, i in zip(tmp_config, range(len(tmp_config))):
+            tmp_config[key] = entries[i].get()
+
+            if type(tmp_config[key]) == type(config[key]):
+                config[key] = tmp_config[key]
+            else:
+                config[key] = json.loads(tmp_config[key])
+        
+        root.destroy()
+
+    frame1 = tk.Frame(root)
+    frame1.grid(row=0, column=0)
+
+    frame2 = tk.Frame(root)
+    frame2.grid(row=0, column=1)
+
+    frame3 = tk.Frame(root)
+    frame3.grid(row=1, column=0)
+
+    tmp_config = config.copy()
+
+    labels = []
+    for key in config:
+        if type(tmp_config[key]) != str:
+            tmp_config[key] = json.dumps(tmp_config[key])
+        labels.append(tk.Label(frame1, text=key, font=("Helvetica", 13)))
+        labels[-1].pack()
+
+    entries = []
+    for key in config:
+        entries.append(tk.Entry(frame2, font=("Helvetica", 13), width=50))
+        entries[-1].pack()
+        entries[-1].insert(0, tmp_config[key])
+
+    info_lbl = tk.Label(frame3, text="Token, Prefix und der Control Panel Hotkey benötigen einen Neustart.", font=("Helvetica", 14))
+    info_lbl.pack()
+
+    done_bt = tk.Button(frame3, text="Fertig", command=done, font=("Helvetica", 14))
+    done_bt.pack()
+
+    while True:
+        try:
+            root.update()
+            time.sleep(1/30)
+        except:
+            break
+
+    json.dump(config, open("config.json", "w"), indent=2)
 
 def toggle_überwachung():
     global ueberwachung
@@ -484,6 +540,9 @@ def toggle_überwachung():
     for key in ueberwachung:
         buttons.append(tk.Button(root, text=key.capitalize() + ": " + str(ueberwachung[key]), command=lambda key=key: toggle(key), font=("Helvetica", 16)))
         buttons[-1].pack()
+
+    config_bt = tk.Button(root, text="Config bearbeiten", command=edit_config, font=("Helvetica", 14))
+    config_bt.pack()
 
     done_bt = tk.Button(root, text="Fertig", command=root.destroy, font=("Helvetica", 14))
     done_bt.pack()
