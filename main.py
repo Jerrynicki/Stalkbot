@@ -465,77 +465,34 @@ def toggle_überwachung():
     global ueberwachung
     root = tk.Tk()
     root.title("Stalkbot Überwachung Control-Panel")
-    # TODO: diesen code schöner machen
 
-    def toggle_tts():
-        if ueberwachung["tts"]:
-            ueberwachung["tts"] = False
+    def toggle(key):
+        if ueberwachung[key]:
+            ueberwachung[key] = False
         else:
-            ueberwachung["tts"] = True
+            ueberwachung[key] = True
 
-    def toggle_screenshot():
-        if ueberwachung["screenshot"]:
-            ueberwachung["screenshot"] = False
-        else:
-            ueberwachung["screenshot"] = True
+        if key == "global":
+            if ueberwachung["global"]:
+                for key in ueberwachung:
+                    ueberwachung[key] = True
+            else:
+                for key in ueberwachung:
+                    ueberwachung[key] = False
 
-    def toggle_webcam():
-        if ueberwachung["webcam"]:
-            ueberwachung["webcam"] = False
-        else:
-            ueberwachung["webcam"] = True
-
-    def toggle_proc():
-        if ueberwachung["proc"]:
-            ueberwachung["proc"] = False
-        else:
-            ueberwachung["proc"] = True
-
-    def toggle_play():
-        if ueberwachung["play"]:
-            ueberwachung["play"] = False
-        else:
-            ueberwachung["play"] = True
-    
-    def toggle_cursor():
-        if ueberwachung["cursor"]:
-            ueberwachung["cursor"] = False
-        else:
-            ueberwachung["cursor"] = True
-    
-    def toggle_keyboard():
-        if ueberwachung["keyboard"]:
-            ueberwachung["keyboard"] = False
-        else:
-            ueberwachung["keyboard"] = True
-
-    tts_bt = tk.Button(root, text="TTS: " + str(ueberwachung["tts"]), command=toggle_tts, font=("Helvetica", 16))
-    scr_bt = tk.Button(root, text="Screenshot: " + str(ueberwachung["screenshot"]), command=toggle_screenshot, font=("Helvetica", 16))
-    webcam_bt = tk.Button(root, text="Webcam: " + str(ueberwachung["webcam"]), command=toggle_webcam, font=("Helvetica", 16))
-    proc_bt = tk.Button(root, text="Prozessliste: " + str(ueberwachung["proc"]), command=toggle_proc, font=("Helvetica", 16))
-    play_bt = tk.Button(root, text="Play: " + str(ueberwachung["play"]), command=toggle_play, font=("Helvetica", 16))
-    cursor_bt = tk.Button(root, text="Cursor: " + str(ueberwachung["cursor"]), command=toggle_cursor, font=("Helvetica", 16))
-    keyboard_bt = tk.Button(root, text="Tastatur: " + str(ueberwachung["keyboard"]), command=toggle_keyboard, font=("Helvetica", 16))
+    buttons = []
+    for key in ueberwachung:
+        buttons.append(tk.Button(root, text=key.capitalize() + ": " + str(ueberwachung[key]), command=lambda key=key: toggle(key), font=("Helvetica", 16)))
+        buttons[-1].pack()
 
     done_bt = tk.Button(root, text="Fertig", command=root.destroy, font=("Helvetica", 14))
-
-    tts_bt.pack()
-    scr_bt.pack()
-    webcam_bt.pack()
-    proc_bt.pack()
-    play_bt.pack()
-    cursor_bt.pack()
-    keyboard_bt.pack()
     done_bt.pack()
+
     while True:
         try:
-            tts_bt.config(text="TTS: " + str(ueberwachung["tts"]))
-            scr_bt.config(text="Screenshot: " + str(ueberwachung["screenshot"]))
-            webcam_bt.config(text="Webcam: " + str(ueberwachung["webcam"]))
-            proc_bt.config(text="Prozessliste: " + str(ueberwachung["proc"]))
-            play_bt.config(text="Play: " + str(ueberwachung["play"]))
-            cursor_bt.config(text="Cursor: " + str(ueberwachung["cursor"]))
-            keyboard_bt.config(text="Tastatur: " + str(ueberwachung["keyboard"]))
+            for key, i in zip(ueberwachung, range(len(ueberwachung))):
+                buttons[i].config(text=key.capitalize() + ": " + str(ueberwachung[key]))
+
             root.update()
             time.sleep(1/30)
         except:
