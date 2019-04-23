@@ -446,7 +446,8 @@ async def emojihelp():
                   white_check_mark_emoji + " Nachricht erfolgreich abgespielt\n" +
                   stop_sign_emoji + " Nachricht wurde abgebrochen (max. 20 Sekunden)\n" +
                   negative_squared_cross_mark_emoji + " Ein Fehler ist aufgetreten\n" +
-                  no_entry_emoji + " Eine TTS-Nachricht wird gerade schon abgespielt")
+                  no_entry_emoji + " Eine TTS-Nachricht wird gerade schon abgespielt" +
+                  hourglass_emoji + " Cooldown aktiv")
 
 
 @bot.event
