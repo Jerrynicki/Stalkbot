@@ -2,11 +2,31 @@
 
 Cooler epischer Stalkbot mit dem deine Discord-Freunde dich stalken können.
 
-## Installation
+### Derzeitiger Stand der Windows-Kompatiblität:
+
+say/tts-Command: ✔️
+
+webcam-Command: ❔
+
+screenshot-Command: ✔️
+
+proc-Command: ❌
+
+play-Command: ✔️
+
+cursor-Command: ✔️
+
+keyboad-Command: ✔️
+
+folder-Command: ✔️
+
+# Aufsetzen des Bots
+
+## Installation vom Quellcode (bleeding-edge)
 
 ### Dependencies
 
-Über Package-Manager:
+Über Package-Manager (Linux):
 * python3
 * python3-pip
 * python3-tk
@@ -15,8 +35,14 @@ Cooler epischer Stalkbot mit dem deine Discord-Freunde dich stalken können.
 * portaudio (portaudio19-dev)
 * xdotool
 
+Windows:
+* Python >= 3.5 installieren von [Python.org](https://python.org/downloads)
+* FFmpeg heruntenladen von [ffmpeg.zeranoe.com/builds](https://ffmpeg.zeranoe.com/builds/) und die enthaltene FFmpeg.exe unter dem Namen `ffmpeg.exe` in den Ordner des Bots verschieben oder eine `ffmpeg_override.txt`-Datei erstellen, in welcher der Pfad zur Datei steht
 
 Über Pip (pip3 install PACKAGE):
+
+Linux und MacOS:
+
 * keyboard
 * mouse
 * pyautogui
@@ -29,10 +55,34 @@ Cooler epischer Stalkbot mit dem deine Discord-Freunde dich stalken können.
 * gtts-token
 * psutil
 
-### Aufsetzen des Bots
-* Git Repository klonen -> `git clone https://github.com/Jerrynicki/Stalkbot`
+Windows:
 
-#### Erstellen der config.json
+* keyboard
+* mouse
+* pyautogui
+* pillow
+* opencv-python
+* discord.py (async-branch)
+* numpy
+* gtts
+* gtts-token
+* psutil
+* win10toast
+
+Anmerkung zum async-Branch von discord.py:
+
+Diesen am besten von [github.com/Rapptz/discord.py/tree/async](https://github.com/Rapptz/discord.py/tree/async) herunterladen und den `discord`-Ordner daraus in den Ordner des Bots einfügen.
+
+### Herunterladen des Quellcodes:
+* Git Repository klonen -> (mit Git installiert:) `git clone https://github.com/Jerrynicki/Stalkbot` oder [als ZIP herunterladen](https://github.com/Jerrynicki/Stalkbot/archive/master.zip) und entpacken
+
+## Installation von Releases (Beta/Stable):
+* [Den neuesten Release herunterladen](https://github.com/Jerrynicki/Stalkbot/releases) (Bitte lade die Datei herunter, die zu deinem Betriebssystem passt)
+
+* Pre-releases (Orange): Beta-Releases, mit neuen Features welche zwar getestet wurden, aber noch instabil sein können
+* Stable Releases (Grün): Weniger Features / älter als die Beta-Version, aber stabil
+
+## Erstellen der config.json
 ```
 {"token": "", 
 "status": "",
@@ -77,4 +127,8 @@ Eine beispielhafte Konfiguration des Benachrichtigungstexts wäre:
 
 #### Starten des Bots
 
-* Nachdem alle Dependencies installiert sind und die config.json erstellt wurde, kann der Bot mit `sudo python3 main.py` gestartet werden.
+* Nachdem alle Dependencies installiert sind und die config.json erstellt wurde, kann der Bot gestartet werden.
+
+* Starten des Bots auf Linux: `sudo python3 main.py`
+
+* Starten des Bots auf Windows: Durch Doppelklicken der Exe-Datei oder (mit installiertem Python-Interpreter) Doppelklicken der main.py-Datei
