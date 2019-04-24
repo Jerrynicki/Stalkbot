@@ -1,12 +1,9 @@
 from gtts import gTTS
 import time
-import os
-import sys
+import subprocess
 
-to_say = sys.argv[1]
+def download(to_say, ffmpeg_executable):
+    tts = gTTS(to_say, lang="de")
+    tts.save("cache/tmp.mp3")
 
-tts = gTTS(to_say, lang="de")
-tts.save("cache/tmp.mp3")
-
-os.system("ffmpeg -y -i cache/tmp.mp3 -af \"volume=-5dB\" cache/tmp.wav")
-# -af \"volume=15dB\"
+    subprocess.call([ffmpeg_executable, "-y", "-i", "cache/tmp.mp3", "-af", "volume=-5dB", "cache/tmp.wav"])
