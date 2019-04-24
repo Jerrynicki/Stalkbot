@@ -39,9 +39,9 @@ Windows:
 * Python >= 3.5 installieren von [Python.org](https://python.org/downloads)
 * FFmpeg heruntenladen von [ffmpeg.zeranoe.com/builds](https://ffmpeg.zeranoe.com/builds/) und die enthaltene FFmpeg.exe unter dem Namen `ffmpeg.exe` in den Ordner des Bots verschieben oder eine `ffmpeg_override.txt`-Datei erstellen, in welcher der Pfad zur Datei steht
 
-Über Pip (pip3 install PACKAGE):
+Über Pip:
 
-Linux und MacOS:
+Linux und MacOS (pip3 install PACKAGE):
 
 * keyboard
 * mouse
@@ -55,7 +55,7 @@ Linux und MacOS:
 * gtts-token
 * psutil
 
-Windows:
+Windows (py -m pip install PACKAGE):
 
 * keyboard
 * mouse
