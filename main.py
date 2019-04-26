@@ -22,6 +22,7 @@ import wave
 import audioop
 import pyautogui
 import sys
+import multiprocessing
 
 import tts_download
 import sum_process_resources
@@ -32,7 +33,6 @@ if PLATFORM.lower().startswith("win"):
 
 if PLATFORM == "windows":
     import winsound
-    import multiprocessing
     from PIL import ImageGrab
     from win10toast import ToastNotifier
     FFMPEG_EXECUTABLE = "ffmpeg.exe"
