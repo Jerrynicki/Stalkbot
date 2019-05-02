@@ -611,3 +611,6 @@ if __name__ == "__main__":
     keyboard_module.add_hotkey(config["control_panel_hotkey"], toggle_überwachung)
 
     bot.run(TOKEN)
+    print("bot.run() ended, restarting in 10 seconds...")
+    time.sleep(10)
+    os.execvp(sys.executable, [sys.executable, sys.argv[0]])
