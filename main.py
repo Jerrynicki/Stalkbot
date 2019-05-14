@@ -9,7 +9,6 @@ import threading
 import socket
 import time
 import cv2
-import numpy
 from PIL import Image, ImageFilter
 import urllib.request
 import urllib.parse

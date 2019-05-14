@@ -34,6 +34,7 @@ folder-Command: ✔️
 * ffmpeg
 * portaudio (portaudio19-dev)
 * xdotool
+* libnotify, falls es nicht auf deiner Distribution vorinstalliert ist
 
 Windows:
 * Python >= 3.5 installieren von [Python.org](https://python.org/downloads)
@@ -49,11 +50,11 @@ Linux und MacOS (pip3 install PACKAGE):
 * pillow
 * opencv-python
 * discord.py (async branch)
-* numpy
 * pyaudio
 * gtts
 * gtts-token
 * psutil
+* (Xlib)
 
 Windows (py -m pip install PACKAGE):
 
