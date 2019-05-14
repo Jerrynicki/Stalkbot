@@ -11,8 +11,6 @@ import time
 import cv2
 import numpy
 from PIL import Image, ImageFilter
-import keyboard as keyboard_module
-import mouse
 import urllib.request
 import urllib.parse
 import json
@@ -23,9 +21,24 @@ import audioop
 import pyautogui
 import sys
 import multiprocessing
+import keyboard as keyboard_module
+import mouse
 
 import tts_download
 import sum_process_resources
+
+def alert(message):
+    root1 = tk.Tk()
+    root1.title("Stalkbot: Warnung")
+    tk.Label(root1, text=message, font=("Helvetica", 15)).pack()
+    tk.Button(root1, text="Okay", font=("Helvetica", 15), command=root1.quit).pack()
+    root1.mainloop()
+    root1.destroy()
+
+if sys.version_info[1] < 6:
+    import collections
+    dict = collections.OrderedDict
+    print("Python interpreter < 3.6 festgestellt, ersetze `dict` mit `collections.OrderedDict`.")
 
 PLATFORM = sys.platform
 if PLATFORM.lower().startswith("win"):
@@ -65,7 +78,7 @@ def notification(action, ctx):
     if PLATFORM == "windows":
         ToastNotifier().show_toast("Stalkbot", notify_text, icon_path=None, duration=int(config["notifications"]["duration"])/1000, threaded=True)
     else:
-        subprocess.call(["notify-send", "-t", config["notifications"]["duration"], notify_text])
+        subprocess.call(["notify-send", "-t", config["notifications"]["duration"], "Stalkbot", notify_text])
 
 def _play_file_win():
     try:
@@ -435,7 +448,11 @@ if __name__ == "__main__":
         play_file("warning_sound.wav", timeout="auto")
         notification("Cursor: " + str(x) + "x" + str(y), ctx)
 
-        mouse.move(x, y, duration=0.5)
+        if mouse_keyboard_ctrl == "keyboard":
+            mouse.move(x, y, duration=0.5)
+        else:
+            pyautogui.moveTo(x, y, duration=0.5)
+
         await bot.add_reaction(ctx.message, white_check_mark_emoji)
 
     @bot.command(pass_context=True)
@@ -458,7 +475,11 @@ if __name__ == "__main__":
         play_file("warning_sound.wav", timeout="auto")
         notification("Keyboard: " + text, ctx)
 
-        keyboard_module.write(text, delay=0.05, exact=True)
+        if mouse_keyboard_ctrl == "keyboard":
+            keyboard_module.write(text, delay=0.05, exact=True)
+        else:
+            pyautogui.typewrite(text, interval=0.05)
+
         await bot.add_reaction(ctx.message, white_check_mark_emoji)
 
     @bot.command(pass_context=True)
@@ -508,8 +529,25 @@ if __name__ == "__main__":
 
     def edit_config():
         global config
+
         root = tk.Tk()
         root.title("Stalkbot Config Editor")
+
+        if sys.version_info[1] < 6: # Der Code ist hässlich weil er nur temporär ist, bugfix bald tm
+            alert("Warnung!\nDein Python Interpreter ist < Version 3.6.\nEin alternativer Config-Editor wird fürs Erste verwendet. Ein Fix kommt bald.")
+            def return_press(*args):
+                root.quit()
+            editor = tk.Text(root, font=("Helvetica", 13))
+            editor.pack()
+            editor.insert(tk.END, json.dumps(config, indent=2))
+            done = tk.Button(root, text="Fertig", font=("Helvetica", 13), command=root.quit)
+            done.pack()
+            root.bind("<Escape>", return_press)
+            root.mainloop()
+            config = json.loads(editor.get("1.0", tk.END))
+            json.dump(config, open("config.json", "w"), indent=2)
+            root.destroy()
+            return
 
         def done():
             global config
@@ -520,6 +558,9 @@ if __name__ == "__main__":
                 if type(tmp_config[key]) == type(config[key]):
                     config[key] = tmp_config[key]
                 else:
+                    print(key)
+                    print(tmp_config)
+                    print(tmp_config[key])
                     config[key] = json.loads(tmp_config[key])
             
             root.destroy()
@@ -604,11 +645,21 @@ if __name__ == "__main__":
                 break
         json.dump(ueberwachung, open("ueberwachung_retain.json", "w"))
 
+    def auto_restart_control_panel():
+        while True:
+            toggle_überwachung()
+
     if not "control_panel_hotkey" in config and "do_not_disturb_hotkey" in config:
         config["control_panel_hotkey"] = config["do_not_disturb_hotkey"]
         print("Achtung! In deiner Config ist der Control Panel Hotkey noch unter 'do_not_disturb_hotkey' definiert! Für Kompatiblität zwischen alten Configs wird das automatisch korrigiert, aber bitte ändere den Namen des Schlüssels trotzdem.")
 
-    keyboard_module.add_hotkey(config["control_panel_hotkey"], toggle_überwachung)
+    try:
+        keyboard_module.add_hotkey(config["control_panel_hotkey"], toggle_überwachung)
+        mouse_keyboard_ctrl = "keyboard"
+    except ImportError:
+        alert("Konnte Hotkey nicht per `keyboard` festlegen (Linux: Bist du kein root?), wechsle zu pyautogui...\n\nACHTUNG: Mit dieser Konfiguration kann das Control Panel nicht per Hotkey aufgerufen werden.\nEs wurde automatisch geöffnet und wird wieder neu gestartet, sobald es geschlossen wird.")
+        threading.Thread(target=auto_restart_control_panel).start()
+        mouse_keyboard_ctrl = "pyautogui"
 
     bot.run(TOKEN)
     print("bot.run() ended, restarting in 10 seconds...")
