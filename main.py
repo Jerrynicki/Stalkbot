@@ -71,9 +71,16 @@ outbox_tray_emoji = "\U0001F4E4"
 no_bell_emoji = "\U0001F515"
 hourglass_emoji = "\U000023F3"
 
-def notification(action, ctx):
+def format_notification(message, action):
     notify_config = config["notifications"]["text"]
-    notify_text = notify_config.replace("$AUTHOR", ctx.message.author.name).replace("$SERVER", ctx.message.server.name).replace("$CHANNEL", "#" + ctx.message.channel.name).replace("$ACTION", action)
+    notify_text = notify_config.replace("$AUTHOR", message.author.name).replace("$SERVER", message.server.name).replace("$CHANNEL", "#" + message.channel.name).replace("$ACTION", action)
+    return notify_text
+
+def notification(action, ctx):
+    global command_log
+
+    notify_text = format_notification(ctx.message, action)
+    command_log.append([time.time(), ctx.message, action])
     if PLATFORM == "windows":
         ToastNotifier().show_toast("Stalkbot", notify_text, icon_path=None, duration=int(config["notifications"]["duration"])/1000, threaded=True)
     else:
@@ -156,9 +163,22 @@ if __name__ == "__main__":
         ueberwachung = ueberwachung_standard
 
     bot = commands.Bot(command_prefix=config["prefix"], description="jejei")
+    command_log = []
 
     if not os.path.isdir("cache"):
         os.mkdir("cache")
+
+    async def clear_old_commands():
+        global command_log
+
+        to_remove = []
+        tm = time.time()
+        deleted = 0
+        for x in range(len(command_log)):
+            x = x - deleted
+            if command_log[x][0] + 600 < tm:
+                del command_log[x]
+                deleted += 1
 
     @bot.event
     async def on_ready():
@@ -166,6 +186,7 @@ if __name__ == "__main__":
         await asyncio.sleep(5)
         while True:
             await bot.change_presence(status=discord.Status.online, game=discord.Game(name=config["status"]))
+            await clear_old_commands()
             await asyncio.sleep(20)
 
 
@@ -521,9 +542,6 @@ if __name__ == "__main__":
         if message.author.bot:
             return
 
-        if message.content.startswith("!!"):
-            message.content = "jer!" + message.content[2:]
-
         await bot.process_commands(message)
 
     def edit_config():
@@ -603,6 +621,35 @@ if __name__ == "__main__":
 
         json.dump(config, open("config.json", "w"), indent=2)
 
+    def show_log():
+        def close():
+            root.quit()
+
+        def update():
+            box.delete(0, tk.END)
+            cmd_log = command_log.copy()
+            tm = time.time()
+            for x in cmd_log:
+                diff = tm - x[0]
+                elapsed = "vor " + str(int(diff // 60)) + "m " + str(int(diff % 60)) + "s"
+            
+                box.insert(tk.END, elapsed + " | " + format_notification(x[1], x[2]))
+
+            root.after(1000, update)
+
+        root = tk.Tk()
+        root.title("Stalkbot: Command-Log")
+
+        box = tk.Listbox(root, height=10, width=90, font=("Helvetica", 13))
+        box.pack()
+
+        done = tk.Button(root, text="Fertig", command=close, font=("Helvetica", 15))
+        done.pack()
+
+        root.after(200, update)
+        root.mainloop()
+        root.destroy()
+
     def toggle_überwachung():
         global ueberwachung
         root = tk.Tk()
@@ -629,6 +676,9 @@ if __name__ == "__main__":
 
         config_bt = tk.Button(root, text="Config bearbeiten", command=edit_config, font=("Helvetica", 14))
         config_bt.pack()
+
+        log_bt = tk.Button(root, text="Command-Log öffnen", command=show_log, font=("Helvetica", 14))
+        log_bt.pack()
 
         done_bt = tk.Button(root, text="Fertig", command=root.destroy, font=("Helvetica", 14))
         done_bt.pack()
