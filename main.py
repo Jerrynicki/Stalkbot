@@ -669,6 +669,40 @@ if __name__ == "__main__":
                     for key in ueberwachung:
                         ueberwachung[key] = False
 
+        def stats_update():
+            """
+            ping_start = time.time()
+            ws = bot.ws
+            ping = await ws.ping()
+            await ping
+            ping_end = time.time()
+            ping = int((ping_start-ping_end)*1000)
+            """
+            ping = "N/A"
+
+            ping_lbl.config(text="Ping: " + str(ping) + "ms")
+
+            if bot.ws and bot.user:
+                if bot.ws.open:
+                    conn_lbl.config(text="Online", fg="green")
+                else:
+                    conn_lbl.config(text="Offline", fg="red")
+            else:
+                conn_lbl.config(text="Offline", fg="red")
+
+            root.after(500, stats_update)
+
+        def buttons_update():
+            for key, i in zip(ueberwachung, range(len(ueberwachung))):
+                buttons[i].config(text=key.capitalize() + ": " + str(ueberwachung[key]))
+            
+            root.after(100, buttons_update)
+
+        conn_lbl = tk.Label(root, font=("Helvetica", 17))
+        ping_lbl = tk.Label(root, font=("Helvetica", 17))
+        conn_lbl.pack()
+        ping_lbl.pack()
+
         buttons = []
         for key in ueberwachung:
             buttons.append(tk.Button(root, text=key.capitalize() + ": " + str(ueberwachung[key]), command=lambda key=key: toggle(key), font=("Helvetica", 16)))
@@ -680,18 +714,13 @@ if __name__ == "__main__":
         log_bt = tk.Button(root, text="Command-Log öffnen", command=show_log, font=("Helvetica", 14))
         log_bt.pack()
 
-        done_bt = tk.Button(root, text="Fertig", command=root.destroy, font=("Helvetica", 14))
+        done_bt = tk.Button(root, text="Fertig", command=root.quit, font=("Helvetica", 14))
         done_bt.pack()
 
-        while True:
-            try:
-                for key, i in zip(ueberwachung, range(len(ueberwachung))):
-                    buttons[i].config(text=key.capitalize() + ": " + str(ueberwachung[key]))
-
-                root.update()
-                time.sleep(1/30)
-            except:
-                break
+        root.after(200, stats_update)
+        root.after(200, buttons_update)
+        root.mainloop()
+        root.destroy()
         json.dump(ueberwachung, open("ueberwachung_retain.json", "w"))
 
     def auto_restart_control_panel():
