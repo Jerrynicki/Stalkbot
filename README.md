@@ -2,6 +2,8 @@
 
 Cooler epischer Stalkbot mit dem deine Discord-Freunde dich stalken können.
 
+# Stalkbot Rewrite: [auf Gitlab](https://gitlab.com/Jerrynicki/stalkbot-rewrite)
+
 ### Derzeitiger Stand der Windows-Kompatiblität:
 
 say/tts-Command: ✔️
